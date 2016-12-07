@@ -1,13 +1,11 @@
 package com.bignerdranch.android.criminallntent;
 
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
+
 
 public class CrimeActivity extends AppCompatActivity{
 
