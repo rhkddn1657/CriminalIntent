@@ -1,5 +1,6 @@
 package com.bignerdranch.android.criminallntent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,7 +22,7 @@ import java.util.List;
 public class CrimeListFragment extends Fragment {
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
-
+    private static final int REQUEST_CRIME = 1;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -34,12 +35,23 @@ public class CrimeListFragment extends Fragment {
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
     private void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
+        if(mAdapter == null) {
+            mAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mAdapter); // RecyclerView 와 어댑터 연결.
+        } else {
+            mAdapter.notifyDataSetChanged();
+        }
 
-        mAdapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(mAdapter); // RecyclerView 와 어댑터 연결.
     }
     private class CrimeHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
@@ -71,12 +83,13 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(getActivity(), mCrime.getTitle() + " 선택됨!", Toast.LENGTH_SHORT)
-                    .show();
+            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+            startActivity(intent);
         }
     }
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
+
         private List<Crime> mCrimes;
 
         public CrimeAdapter(List<Crime> crimes) {
@@ -89,7 +102,7 @@ public class CrimeListFragment extends Fragment {
             //"RecyclerView"는 해당 메소드를 호출하여 리스트에서 항목 하나하나를 ViewHolder 에 보낸다.
             //"ViewHolder"에서는 이 항목 하나를 받아서 항목에있는 위젯(TextView,imageView,CheckBox..등)
             //들을 참조를 받아온다.
-            Log.d("test", "onCreateViewHolder start");
+            Log.d("test", "onCreateViewHolder start viewType:"+viewType);
 
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View view = layoutInflater.inflate(R.layout.list_item_crime, parent, false);
