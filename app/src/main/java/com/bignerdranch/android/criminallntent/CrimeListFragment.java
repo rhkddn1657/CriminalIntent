@@ -20,9 +20,12 @@ import java.util.List;
  */
 
 public class CrimeListFragment extends Fragment {
+
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
     private static final int REQUEST_CRIME = 1;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -30,11 +33,14 @@ public class CrimeListFragment extends Fragment {
         mCrimeRecyclerView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+//        Fragment ddd = this;
 
         updateUI();
 
         return view;
     }
+
+
 
     @Override
     public void onResume() {
@@ -42,17 +48,20 @@ public class CrimeListFragment extends Fragment {
         updateUI();
     }
 
+
     private void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
         if(mAdapter == null) {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecyclerView.setAdapter(mAdapter); // RecyclerView 와 어댑터 연결.
+
         } else {
             mAdapter.notifyDataSetChanged();
         }
-
     }
+
+
     private class CrimeHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
         private Crime mCrime;
@@ -66,6 +75,7 @@ public class CrimeListFragment extends Fragment {
             mDateTextView.setText(mCrime.getDate().toString());
             mSolvedCheckBox.setChecked(mCrime.isSolved());
         }
+
 
         public CrimeHolder(View itemView) {
             super(itemView);
@@ -83,7 +93,8 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+            Log.d("test", "onClick start");
+            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
             startActivity(intent);
         }
     }
@@ -123,5 +134,14 @@ public class CrimeListFragment extends Fragment {
         public int getItemCount() {
             return mCrimes.size();
         }
+
+       /* @Override
+        public int getItemViewType(int position) {
+            if(mCrimes.get(position) instanceof Crime)
+                return 0;
+            else if(mCrimes.get(position) instanceof Banner)
+                return 1;
+        }
+        */
     }
 }

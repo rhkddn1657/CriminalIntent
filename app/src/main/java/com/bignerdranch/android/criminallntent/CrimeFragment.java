@@ -70,7 +70,7 @@ public class CrimeFragment extends Fragment {
         DateFormat newDate = new DateFormat();
         CharSequence newFormat = newDate.format("EEEE MMM dd일 yyyy",mCrime.getDate());
         mDateButton.setText(newFormat);
-        mDateButton.setEnabled(false);//비활성화
+        mDateButton.setEnabled(false);//버튼클릭비활성화메소드
 
         mSolvedCheckBox = (CheckBox)v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
