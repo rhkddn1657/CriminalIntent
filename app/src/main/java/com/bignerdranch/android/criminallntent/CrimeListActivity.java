@@ -18,6 +18,7 @@ public class CrimeListActivity extends SingleFragmentActivity {
     //표시해둠.(즉,안드로이드매니페스트에 "CrimeListActivity"가 시작메소드이고, 현재 onCreate()메소드
     //에서 상위클래스의 onCreate()메소드를 호출하고 있으니 상위클래스인 "SingleFragmentActivity"가
     //불려지고 이 클래스의 onCreate()메소드가 실행된다.)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
