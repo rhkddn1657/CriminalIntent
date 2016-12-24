@@ -24,12 +24,10 @@ public class CrimeLab {
 
     private CrimeLab(Context context) {
         mCrimes = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
-            Crime crime = new Crime();
-            crime.setTitle("범죄 #" + i);
-            crime.setSolved(i % 2 == 0); // 짝수 번째 요소에는 "true"를 임의 설정함.
-            mCrimes.add(crime);
-        }
+    }
+
+    public void addCrime(Crime c) {
+        mCrimes.add(c);
     }
 
     public List<Crime> getCrimes() {

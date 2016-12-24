@@ -109,10 +109,10 @@ public class CrimeFragment extends Fragment {
             updateDate();
         }
     }
+
     private void updateDate() {
         DateFormat newDate = new DateFormat();
         CharSequence newFormat = newDate.format("yyyy년 MMM dd일 EEEE",mCrime.getDate());
         mDateButton.setText(newFormat);
     }
-
 }
