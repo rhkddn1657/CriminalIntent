@@ -16,7 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import java.util.List;
 
@@ -31,6 +31,7 @@ public class CrimeListFragment extends Fragment {
     private static final int REQUEST_CRIME = 1;
     private boolean mSubtitleVisible;
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
+    private TextView mEmptyView;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d("test2","onCreate() start");
@@ -47,7 +48,7 @@ public class CrimeListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_crime_list, container, false);
         mCrimeRecyclerView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
+        mEmptyView = (TextView) view.findViewById(R.id.empty_crime_view);
         if(savedInstanceState != null) {
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
         }
@@ -133,6 +134,14 @@ public class CrimeListFragment extends Fragment {
         } else {
             mAdapter.notifyDataSetChanged();
         }
+
+        if (crimes.isEmpty()) {
+            mCrimeRecyclerView.setVisibility(View.GONE);
+            mEmptyView.setVisibility(View.VISIBLE);
+        } else {
+            mCrimeRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
+        }
         updateSubtitle();
     }
 
@@ -148,8 +157,11 @@ public class CrimeListFragment extends Fragment {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
             DateFormat newDate = new DateFormat();
-            CharSequence newFormat = newDate.format("yyyy년 MMM dd일 EEEE",mCrime.getDate());
-            mDateTextView.setText(newFormat);
+            CharSequence newFormat1 = newDate.format("yyyy년 MMM dd일 EEEE",mCrime.getDate());
+            CharSequence newFormat2 = newDate.format("aa H시 mm분", mCrime.getDate());
+            String str1 = (String)newFormat1;
+            String str2 = (String)newFormat2;
+            mDateTextView.setText(str1+"\b"+str2);
             mSolvedCheckBox.setChecked(mCrime.isSolved());
         }
 
