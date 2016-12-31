@@ -9,6 +9,7 @@ public class Crime {
     private String mTitle;
     private Date mDate;
     private boolean mSolved;
+    private String mSuspect;
 
     public Crime() {
         // 고유한 식별자를 생성한다.
@@ -39,4 +40,12 @@ public class Crime {
     public void setSolved(boolean solved) {mSolved = solved;}
 
     public boolean isSolved() {return mSolved;}
+
+    public String getSuspect() {
+        return mSuspect;
+    }
+
+    public void setSuspect(String suspect) {
+        mSuspect = suspect;
+    }
 }

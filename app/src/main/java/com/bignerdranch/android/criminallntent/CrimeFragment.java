@@ -3,10 +3,14 @@ package com.bignerdranch.android.criminallntent;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -31,12 +35,14 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_DATE = "DialogDate";
     private static final String DIALOG_TIME = "DialogTime";
     private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_CONTACT = 1;
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
-
+    private Button mReportButton;
+    private Button mSuspectButton;
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
@@ -122,6 +128,46 @@ public class CrimeFragment extends Fragment {
                 mCrime.setSolved(isChecked);
             }
         });
+
+        mReportButton = (Button) v.findViewById(R.id.crime_report);
+        mReportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+                i.putExtra(Intent.EXTRA_SUBJECT,
+                        getString(R.string.crime_report_subject));
+                i = Intent.createChooser(i, getString(R.string.send_report));
+                //매번 선택기가 나타나게 할 수 있는 매소드(객체와 선택기의 제목 문자열을 인자로 전달)
+                startActivity(i);
+                
+            }
+        });
+
+        final Intent pickContact = new Intent(Intent.ACTION_PICK,
+                ContactsContract.Contacts.CONTENT_URI);
+        mSuspectButton = (Button) v.findViewById(R.id.crime_suspect);
+        mSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(pickContact, REQUEST_CONTACT);
+            }
+        });
+
+        if (mCrime.getSuspect() != null) {
+            mSuspectButton.setText(mCrime.getSuspect());
+        }
+
+        //연락처 앱이 없을때 앱이 중단되는걸 막기위한 대비책.
+        //"PackageManager"는 안드로이즈 장치에 설치된 모든 컴포넌트와 그것의 액티비티를 알고 있다.
+        //(348p참고)
+        PackageManager packageManager = getActivity().getPackageManager();
+        if (packageManager.resolveActivity(pickContact,
+                PackageManager.MATCH_DEFAULT_ONLY) == null) {
+            mSuspectButton.setEnabled(false);
+        }
         return v;
     }
 
@@ -142,6 +188,24 @@ public class CrimeFragment extends Fragment {
             mCrime.setDate(date);
             updateDate();
             updateTime();
+        } else if (requestCode == REQUEST_CONTACT && data != null) {
+            Uri contactUri = data.getData();
+            String[] queryFields = new String[] {
+                    ContactsContract.Contacts.DISPLAY_NAME
+            };
+            Cursor c = getActivity().getContentResolver()
+                    .query(contactUri, queryFields, null, null, null);
+            try {
+                if (c.getCount() == 0) {
+                    return;
+                }
+                c.moveToFirst();
+                String suspect = c.getString(0);
+                mCrime.setSuspect(suspect);
+                mSuspectButton.setText(suspect);
+            } finally {
+                c.close();
+            }
         }
     }
 
@@ -161,14 +225,45 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updateDate() {
+        /*
+        String dateFormat = "yyyy년 MMM dd일 EEEE";
+        CharSequence dateString = DateFormat.format(dateFormat, mCrime.getDate());
+        mTimeButton.setText(dateString);
+        */
         DateFormat newDate = new DateFormat();
         CharSequence newFormat = newDate.format("yyyy년 MMM dd일 EEEE",mCrime.getDate());
         mDateButton.setText(newFormat);
     }
 
     private void updateTime() {
+        /*
+        String dateFormat = "aa H시 mm분";
+        CharSequence dateString = DateFormat.format(dateFormat, mCrime.getDate());
+        mTimeButton.setText(dateString);
+        */
         DateFormat newDate = new DateFormat();
         CharSequence newFormat = newDate.format("aa H시 mm분", mCrime.getDate());
         mTimeButton.setText(newFormat);
+    }
+
+    private String getCrimeReport() {
+        String solvedString = "제목 없음!";
+        if (mCrime.isSolved()) {
+            solvedString = getString(R.string.crime_report_solved);
+        } else {
+            solvedString = getString(R.string.crime_report_unsolved);
+        }
+        String dateFormat = "yyyy년 MMM dd일 EEEE aa H시 mm분";
+        String dateString = DateFormat.format(dateFormat, mCrime.getDate()).toString();
+
+        String suspect = mCrime.getSuspect();
+        if (suspect == null) {
+            suspect = getString(R.string.crime_report_no_suspect);
+        } else {
+            suspect = getString(R.string.crime_report_suspect, suspect);
+        }
+        String report = getString(R.string.crime_report, mCrime.getTitle(), dateString
+            , solvedString, suspect);
+        return report;
     }
 }
