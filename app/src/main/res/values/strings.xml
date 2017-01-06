@@ -22,5 +22,6 @@
     <string name="crime_report_suspect">용의자는 %s</string>
     <string name="crime_report_subject">CriminalIntent 범죄 보고서</string>
     <string name="send_report">범죄 보고서 전송</string>
+    <string name="crime_suspect_call">용의자 통화 연결</string>
 
 </resources>

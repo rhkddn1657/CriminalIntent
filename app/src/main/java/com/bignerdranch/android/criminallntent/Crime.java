@@ -10,7 +10,7 @@ public class Crime {
     private Date mDate;
     private boolean mSolved;
     private String mSuspect;
-
+    private String mContactId;
     public Crime() {
         // 고유한 식별자를 생성한다.
         this(UUID.randomUUID());
@@ -47,5 +47,13 @@ public class Crime {
 
     public void setSuspect(String suspect) {
         mSuspect = suspect;
+    }
+
+    public String getContactId()  {return mContactId;}
+
+    public void setContactId(String contactId) { mContactId = contactId;}
+
+    public String getPhotoFilename() {
+        return "IMG_" + getId().toString() + ".jpg";
     }
 }
