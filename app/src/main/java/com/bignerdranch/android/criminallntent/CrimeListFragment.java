@@ -197,6 +197,10 @@ public class CrimeListFragment extends Fragment {
             mCrimes = crimes;
         }
 
+        @Override
+        public int getItemViewType(int position) {
+            return super.getItemViewType(position);
+        }
 
         @Override
         public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType) {

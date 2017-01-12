@@ -4,11 +4,11 @@ package com.bignerdranch.android.criminallntent;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -38,6 +39,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.StringSignature;
+
 import java.io.File;
 import java.util.Date;
 import java.util.UUID;
@@ -49,7 +53,7 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
     private static final int REQUEST_PHOTO = 2;
-    private static final int REQUEST_CALL_PERMISSION = 3;
+    public static final int REQUEST_CALL_PERMISSION = 3;
 
     private Crime mCrime;
     private File mPhotoFile;
@@ -62,6 +66,7 @@ public class CrimeFragment extends Fragment {
     private Button mSuspectCallButton;
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
+
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
@@ -96,7 +101,7 @@ public class CrimeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
 
-        mTitleField = (EditText)v.findViewById(R.id.crime_title);
+        mTitleField = (EditText) v.findViewById(R.id.crime_title);
         mTitleField.setText(mCrime.getTitle());
         mTitleField.addTextChangedListener(new TextWatcher() {
             @Override
@@ -116,7 +121,7 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        mDateButton = (Button)v.findViewById(R.id.crime_date);
+        mDateButton = (Button) v.findViewById(R.id.crime_date);
         updateDate();
         mDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,7 +134,7 @@ public class CrimeFragment extends Fragment {
         });
         //mDateButton.setEnabled(false);//버튼클릭비활성화메소드
 
-        mTimeButton = (Button)v.findViewById(R.id.crime_time);
+        mTimeButton = (Button) v.findViewById(R.id.crime_time);
         updateTime();
         mTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,7 +146,7 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        mSolvedCheckBox = (CheckBox)v.findViewById(R.id.crime_solved);
+        mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -195,6 +200,7 @@ public class CrimeFragment extends Fragment {
         mSuspectCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+              //  http:dyy2016.cafe24.com/?p=360 도움
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     int permissionCallResult = ContextCompat.checkSelfPermission(getActivity(),
                             Manifest.permission.CALL_PHONE);
@@ -213,32 +219,33 @@ public class CrimeFragment extends Fragment {
                                 dialog.setTitle("권한이 필요합니다.")
                                         .setMessage("이 기능을 사용하기 위해서는 단말기의 \"전화걸기 및 관리\" " +
                                                 "권한이 필요합니다. 계속하시겠습니까?")
-                                        .setPositiveButton("네",new DialogInterface.OnClickListener() {
+                                        .setPositiveButton("네", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int id) {
 
-                                                if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.M) {
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                                     requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
-                                                        Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
+                                                            Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
                                                 }
                                             }
                                         })
                                         .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int id) {
-                                                Toast.makeText(getActivity(),"앱 실행을 위해서는 전화 관리 권한을 " +
-                                                        "설정해야 합니다",Toast.LENGTH_SHORT);
+                                                Toast.makeText(getActivity(), "앱 실행을 위해서는 전화 관리 권한을 " +
+                                                        "설정해야 합니다", Toast.LENGTH_SHORT);
                                             }
                                         })
                                         .create()
                                         .show();
                             } else {
-                                getActivity().requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
+                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE,
                                         Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
                             }
                         } else {
-                            getActivity().requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
+                            requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
                                     Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
+                            Log.d("test9", "성공");
                         }
                     } else {
                         callPhone();
@@ -247,6 +254,8 @@ public class CrimeFragment extends Fragment {
                     callPhone();
                 }
             }
+
+
         });
         //장치내에 연락처 앱이 없을때 앱이 중단되는걸 막기위한 대비책.
         //"PackageManager"는 안드로이즈 장치에 설치된 모든 컴포넌트와 그것의 액티비티를 알고 있다.
@@ -280,9 +289,10 @@ public class CrimeFragment extends Fragment {
         });
 
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
+
+        updatePhotoView();
         return v;
     }
-
 
 
     @Override
@@ -293,18 +303,19 @@ public class CrimeFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("test3","onAcitivityResult : requestCode:"+requestCode+"| resultCode:"+resultCode);
+
+        Log.d("test3", "onAcitivityResult : requestCode:" + requestCode + "| resultCode:" + resultCode);
         if (resultCode != Activity.RESULT_OK) {
-            return ;
+            return;
         }
-        if (requestCode == REQUEST_DATE ) {
+        if (requestCode == REQUEST_DATE) {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
             updateDate();
             updateTime();
         } else if (requestCode == REQUEST_CONTACT && data != null) {
             Uri contactUri = data.getData();
-            String[] queryFields = new String[] {
+            String[] queryFields = new String[]{
                     ContactsContract.Contacts.DISPLAY_NAME,
                     ContactsContract.Contacts._ID
             };
@@ -313,7 +324,7 @@ public class CrimeFragment extends Fragment {
             try {
                 if (c.getCount() == 0) {
                     return;
-            }
+                }
                 c.moveToFirst();
                 String suspect = c.getString(0);
                 String contactId = c.getString(1);
@@ -325,17 +336,19 @@ public class CrimeFragment extends Fragment {
             } finally {
                 c.close();
             }
+        } else if (requestCode == REQUEST_PHOTO) {
+            updatePhotoView();
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case R.id.menu_item_delete_crime :
+        switch (item.getItemId()) {
+            case R.id.menu_item_delete_crime:
                 UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
                 Crime crime = CrimeLab.get(getContext()).getCrime(crimeId);
                 CrimeLab.get(getContext()).deleteCrime(crime);
-                Intent intent = new Intent(getActivity(),CrimeListActivity  .class);
+                Intent intent = new Intent(getActivity(), CrimeListActivity.class);
                 startActivity(intent);
                 return true;
             default:
@@ -347,64 +360,67 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
-        Log.d("test9","requestCode:"+requestCode);
+        Log.d("test9", "requestCode:" + requestCode);
         switch (requestCode) {
             case REQUEST_CALL_PERMISSION: {
-                Log.d("test9","성공1");
+                Log.d("test9", "grantResults[0]:" + grantResults[0] + "grantResult[1]:" + grantResults[1]);
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
                         grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("test9","성공2");
+                    Log.d("test9", "성공2");
                     if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE)
                             != PackageManager.PERMISSION_GRANTED) {
-                        Log.d("test9","성공3");
+                        Log.d("test9", "성공3");
                         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
                                 != PackageManager.PERMISSION_GRANTED) {
-                            Log.d("test9","성공4");
+                            Log.d("test9", "성공4");
                             callPhone();
                         }
                     }
-                }
-                else {
+                } else {
                     Toast.makeText(getActivity(), "권한 요청을 거부했습니다.", Toast.LENGTH_SHORT).show();
-                    }
+                }
             }
         }
     }
 
     private void callPhone() {
+        Log.d("test9", "callPhone");
         Uri contentUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        String[] queryField = new String[] {
+        String[] queryField = new String[]{
                 ContactsContract.CommonDataKinds.Phone.NUMBER
         };
-        String whereClause = ContactsContract.CommonDataKinds.Phone._ID +" = ?";
-        String args[] = new String[] { mCrime.getContactId() };
+        String whereClause = ContactsContract.CommonDataKinds.Phone._ID + " = ?";
+        String args[] = new String[]{mCrime.getContactId()};
 
         Cursor c = getActivity().getContentResolver()
                 .query(contentUri, queryField, whereClause, args, null);
 
         try {
-            if (c.getCount() == 0 ) {
+            if (c.getCount() == 0) {
                 return;
             }
             c.moveToFirst();
             String number = c.getString(0);
-            Log.d("test10",number);
-            Uri phoneNumber = Uri.parse("tel:"+number);
-            Intent intent = new Intent(Intent.ACTION_DIAL,phoneNumber);
+            Log.d("test10", number);
+            Uri phoneNumber = Uri.parse("tel:" + number);
+            Intent intent = new Intent(Intent.ACTION_DIAL, phoneNumber);
             startActivity(intent);
         } finally {
             c.close();
         }
     }
+
     private void updateDate() {
-        /*
+
         String dateFormat = "yyyy년 MMM dd일 EEEE";
         CharSequence dateString = DateFormat.format(dateFormat, mCrime.getDate());
-        mTimeButton.setText(dateString);
-        */
-        DateFormat newDate = new DateFormat();
-        CharSequence newFormat = newDate.format("yyyy년 MMM dd일 EEEE",mCrime.getDate());
-        mDateButton.setText(newFormat);
+        mDateButton.setText(dateString);
+
+
+//        DateFormat newDate = new DateFormat();
+//        CharSequence newFormat = newDate.format("yyyy년 MMM dd일 EEEE",mCrime.getDate());
+//        mDateButton.setText(newFormat);
+
     }
 
     private void updateTime() {
@@ -435,7 +451,30 @@ public class CrimeFragment extends Fragment {
             suspect = getString(R.string.crime_report_suspect, suspect);
         }
         String report = getString(R.string.crime_report, mCrime.getTitle(), dateString
-            , solvedString, suspect);
+                , solvedString, suspect);
         return report;
     }
+
+    private void updatePhotoView() {
+//        File file = CrimeLab.get(getActivity()).getPhotoFile(crime);
+//        Glide.with(this).load(mPhotoFile.getPath()).into(mPhotoView);
+
+//        http://galmaegi74.tistory.com/2 도움 주소
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mPhotoView.setImageDrawable(null);
+        } else {
+            //"Glide"를 사용하면 자동으로 글라이드에서 캐싱을 하기 때문에 신규 이미지가아닌 계속 기존 이미지가
+            //보여질수도 있다. 그래서 수동으로 새로고침을 하기위해 ".signature"를 사용한다.
+            //-도움주소(Glide 신규이미지 새로고침에 대한 설명.)
+            //http://galmaegi74.tistory.com/2
+            //https://plus.google.com/111427815590592024590/posts/Qusy9fiwkkV
+            Glide.with(this).load(mPhotoFile.getPath())
+            .signature(new StringSignature(String.valueOf(System.currentTimeMillis())))
+            .into(mPhotoView );
+//            Bitmap bitmap = PictureUtils.getScaledBitmap(
+//                    mPhotoFile.getPath(), getActivity());
+//            mPhotoView.setImageBitmap(bitmap);
+        }
+    }
+
 }

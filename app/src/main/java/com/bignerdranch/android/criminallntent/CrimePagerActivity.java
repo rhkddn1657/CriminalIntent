@@ -1,10 +1,12 @@
 package com.bignerdranch.android.criminallntent;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -63,10 +65,21 @@ public class CrimePagerActivity extends AppCompatActivity {
         }
 
     }
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[], @NonNull int[] grantResults) {
-        Log.d("test9", "requestCode:" + requestCode);
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+////        Log.d("test9", "requestCode:" + requestCode);
+//
+//    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+//        if (fragments != null) {
+//            for (Fragment fragment : fragments) {
+//                fragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//            }
+//        }
+//    }
 
-    }
 }

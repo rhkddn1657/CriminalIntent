@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.bignerdranch.android.criminallntent">
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-                     android:maxSdkVersion="18"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <user-permission android:name="android.permission.CALL_PHONE"/>
     <user-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -16,7 +16,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/> //액티비티가 어플리케이션 시작점이 될 수 있는 액션
                 <category android:name="android.intent.category.LAUNCHER"/> // 이 액티비티가 어플리케이션 런처(바로가기 아이콘?)에 표시되도록 해주는 카테고리
-                <user-permission android:name="android.permission.READ_CONTACTS"/>
             </intent-filter>
         </activity>
         <activity android:name=".CrimePagerActivity"

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import android.util.Log;
 
 import com.bignerdranch.android.criminallntent.database.CrimeBaseHelper;
 import com.bignerdranch.android.criminallntent.database.CrimeDbSchema;
@@ -90,11 +91,14 @@ public class CrimeLab {
     public File getPhotoFile(Crime crime) {
         File externalFilesDir = mContext
                 .getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-
+        Log.d("test10","2"+externalFilesDir.getAbsolutePath());
+//        externalFilesDir.exists();
         if (externalFilesDir == null) {
             return null;
         }
-        return new File(externalFilesDir, crime.getPhotoFilename()); //파일위치,이름 반환
+        File file = new File(externalFilesDir, crime.getPhotoFilename());
+        Log.d("test10","1"+file.getAbsoluteFile());
+        return file; //파일위치,이름 반환
     }
 
     public void updateCrime(Crime crime) {
