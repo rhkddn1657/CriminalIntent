@@ -23,7 +23,7 @@ import java.util.GregorianCalendar;
 
 public class TimePickerFragment extends DialogFragment {
 
-    private static final String ARG_Time = "time";
+    private static final String ARG_TIME = "time";
     private TimePicker mTimePicker;
     private int year;
     private int month;
@@ -34,7 +34,7 @@ public class TimePickerFragment extends DialogFragment {
 
     public static TimePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
-        args.putSerializable(ARG_Time, date);
+        args.putSerializable(ARG_TIME, date);
 
         TimePickerFragment fragment = new TimePickerFragment();
         fragment.setArguments(args);
@@ -44,7 +44,7 @@ public class TimePickerFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Date date = (Date) getArguments().getSerializable(ARG_Time);
+        final Date date = (Date) getArguments().getSerializable(ARG_TIME);
 
         Calendar calendar = Calendar.getInstance(); //Calendar 객체로부터 필요한데이터형태로 변환.
         calendar.setTime(date);

@@ -1,26 +1,17 @@
 package com.bignerdranch.android.criminallntent;
 
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ShareCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -37,7 +28,6 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.signature.StringSignature;
@@ -50,6 +40,7 @@ public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final String DIALOG_TIME = "DialogTime";
+    private static final String DIALOG_PICTURE = "DialogPicture";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
     private static final int REQUEST_PHOTO = 2;
@@ -58,6 +49,7 @@ public class CrimeFragment extends Fragment {
     private Crime mCrime;
     private File mPhotoFile;
     private EditText mTitleField;
+    private EditText mContentField;
     private Button mDateButton;
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
@@ -66,6 +58,7 @@ public class CrimeFragment extends Fragment {
     private Button mSuspectCallButton;
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
+    private ImageView mImageZoonIn;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -85,7 +78,6 @@ public class CrimeFragment extends Fragment {
         mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
         setHasOptionsMenu(true); //현재의 "Fragment"가 옵션메뉴에 항목을 추가하겠다는 것을 명시해야한다.
         // 만약 명시를 안한다면 "onCreateOptionsMenu()" 함수는 호출되지 않을 것이다.
-
     }
 
     @Override
@@ -118,6 +110,26 @@ public class CrimeFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 Log.d("test", "afterTextChanged() : s : " + s);
+            }
+        });
+
+        mContentField = (EditText) v.findViewById(R.id.crime_content);
+        mContentField.setText(mCrime.getContent());
+        mContentField.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mCrime.setContent(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
 
@@ -193,70 +205,107 @@ public class CrimeFragment extends Fragment {
             mSuspectButton.setText(mCrime.getSuspect());
         }
 
-        //Context 넣는값에 getActivity()메소드를 넣었다. 그 이유는 "Fragment"는 "Activity"가 아니기
-        //때문에 "context"를 가지지 않는다. 그래서 "Fragment" 구현시 "context"를 이용해야 할 경우
-        //에는 getActivity()함수를 이용해야한다.
+
+
         mSuspectCallButton = (Button) v.findViewById(R.id.crime_suspect_call);
         mSuspectCallButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
-              //  http:dyy2016.cafe24.com/?p=360 도움
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    int permissionCallResult = ContextCompat.checkSelfPermission(getActivity(),
-                            Manifest.permission.CALL_PHONE);
-                    int permissionContactsResult = ContextCompat.checkSelfPermission(getActivity(),
-                            Manifest.permission.READ_CONTACTS);
+                ((CrimePagerActivity)getActivity()).askPermission(mCrime.getContactId());
 
-                    if (permissionCallResult != PackageManager.PERMISSION_GRANTED && permissionContactsResult
-                            != PackageManager.PERMISSION_GRANTED) {
-
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                                Manifest.permission.CALL_PHONE)) {
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                                    Manifest.permission.READ_CONTACTS)) {
-
-                                AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-                                dialog.setTitle("권한이 필요합니다.")
-                                        .setMessage("이 기능을 사용하기 위해서는 단말기의 \"전화걸기 및 관리\" " +
-                                                "권한이 필요합니다. 계속하시겠습니까?")
-                                        .setPositiveButton("네", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int id) {
-
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                                    requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
-                                                            Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
-                                                }
-                                            }
-                                        })
-                                        .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                Toast.makeText(getActivity(), "앱 실행을 위해서는 전화 관리 권한을 " +
-                                                        "설정해야 합니다", Toast.LENGTH_SHORT);
-                                            }
-                                        })
-                                        .create()
-                                        .show();
-                            } else {
-                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE,
-                                        Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
-                            }
-                        } else {
-                            requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
-                                    Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
-                            Log.d("test9", "성공");
-                        }
-                    } else {
-                        callPhone();
-                    }
-                } else {
-                    callPhone();
-                }
             }
-
-
         });
+
+
+//        mSuspectCallButton = (Button) v.findViewById(R.id.crime_suspect_call);
+//        mSuspectCallButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                int readcontactscheck = ContextCompat.checkSelfPermission(getActivity(),
+//                        Manifest.permission.READ_CONTACTS);
+//                int callphonecheck = ContextCompat.checkSelfPermission(getActivity(),
+//                        Manifest.permission.CALL_PHONE);
+//                if (readcontactscheck != PackageManager.PERMISSION_GRANTED) {
+//                    if (callphonecheck != PackageManager.PERMISSION_GRANTED) {
+//                        requestPermissions(new String[]{Manifest.permission.READ_CONTACTS,
+//                        Manifest.permission.CALL_PHONE},REQUEST_CALL_PERMISSION );
+//                        callPhone();
+//                    }
+//                } else {
+//                    callPhone();
+//                }
+//            }
+//        });
+
+//        두번째방법
+        //- 오류로 인한 사용불가2(결국 오픈소스 사용)
+//        //Context 넣는값에 getActivity()메소드를 넣었다. 그 이유는 "Fragment"는 "Activity"가 아니기
+//        //때문에 "context"를 가지지 않는다. 그래서 "Fragment" 구현시 "context"를 이용해야 할 경우
+//        //에는 getActivity()함수를 이용해야한다.
+//        mSuspectCallButton = (Button) v.findViewById(R.id.crime_suspect_call);
+//        mSuspectCallButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//              //  http:dyy2016.cafe24.com/?p=360 도움
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    int permissionCallResult = ContextCompat.checkSelfPermission(getActivity(),
+//                            Manifest.permission.CALL_PHONE);
+//                    int permissionContactsResult = ContextCompat.checkSelfPermission(getActivity(),
+//                            Manifest.permission.READ_CONTACTS);
+//
+//                    if (permissionCallResult != PackageManager.PERMISSION_GRANTED && permissionContactsResult
+//                            != PackageManager.PERMISSION_GRANTED) {
+//
+//                        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+//                                Manifest.permission.CALL_PHONE)) {
+//                            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+//                                    Manifest.permission.READ_CONTACTS)) {
+//
+//                                AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+//                                dialog.setTitle("권한이 필요합니다.")
+//                                        .setMessage("이 기능을 사용하기 위해서는 단말기의 \"전화걸기 및 관리\" " +
+//                                                "권한이 필요합니다. 계속하시겠습니까?")
+//                                        .setPositiveButton("네", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int id) {
+//
+//                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                                                    requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
+//                                                            Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
+//                                                }
+//                                            }
+//                                        })
+//                                        .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int id) {
+//                                                Toast.makeText(getActivity(), "앱 실행을 위해서는 전화 관리 권한을 " +
+//                                                        "설정해야 합니다", Toast.LENGTH_SHORT);
+//                                            }
+//                                        })
+//                                        .create()
+//                                        .show();
+//                            } else {
+//                                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE,
+//                                        Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
+//                            }
+//                        } else {
+//                            requestPermissions(new String[]{Manifest.permission.CALL_PHONE,
+//                                    Manifest.permission.READ_CONTACTS}, REQUEST_CALL_PERMISSION);
+//                            Log.d("test9", "성공");
+//                        }
+//                    } else {
+//                        callPhone();
+//                    }
+//                } else {
+//                    callPhone();
+//                }
+//            }
+//
+//
+//        });
+
+
         //장치내에 연락처 앱이 없을때 앱이 중단되는걸 막기위한 대비책.
         //"PackageManager"는 안드로이즈 장치에 설치된 모든 컴포넌트와 그것의 액티비티를 알고 있다.
         //(348p참고)
@@ -289,6 +338,19 @@ public class CrimeFragment extends Fragment {
         });
 
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
+        mImageZoonIn = (ImageView) v.findViewById(R.id.dialog_image_picker);
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Glide.with(getActivity()).load(mPhotoFile.getPath())
+                        .signature(new StringSignature(String.valueOf(System.currentTimeMillis())))
+                        .into(mImageZoonIn);
+//                FragmentManager manager = getFragmentManager();
+//                PictureZoomInFragment.setImageView(mPhotoFile, mImageZoonIn);
+//                new PictureZoomInFragment().show(manager, DIALOG_PICTURE);
+            }
+        });
+
 
         updatePhotoView();
         return v;
@@ -356,59 +418,72 @@ public class CrimeFragment extends Fragment {
         }
     }
 
-    // requestPermissions가 실행되면 실행되는 메소드
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[], @NonNull int[] grantResults) {
-        Log.d("test9", "requestCode:" + requestCode);
-        switch (requestCode) {
-            case REQUEST_CALL_PERMISSION: {
-                Log.d("test9", "grantResults[0]:" + grantResults[0] + "grantResult[1]:" + grantResults[1]);
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                        grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("test9", "성공2");
-                    if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        Log.d("test9", "성공3");
-                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
-                                != PackageManager.PERMISSION_GRANTED) {
-                            Log.d("test9", "성공4");
-                            callPhone();
-                        }
-                    }
-                } else {
-                    Toast.makeText(getActivity(), "권한 요청을 거부했습니다.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+//        if (requestCode == REQUEST_CALL_PERMISSION) {
+//            Log.d("test15","grantResults[0]:"+ grantResults[0]);
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+//                        grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+//                callPhone();
+//            }
+//        }
+//    }
 
-    private void callPhone() {
-        Log.d("test9", "callPhone");
-        Uri contentUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        String[] queryField = new String[]{
-                ContactsContract.CommonDataKinds.Phone.NUMBER
-        };
-        String whereClause = ContactsContract.CommonDataKinds.Phone._ID + " = ?";
-        String args[] = new String[]{mCrime.getContactId()};
+    //두번째 방법
+//    requestPermissions가 실행되면 실행되는 메소드
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+//        Log.d("test9", "requestCode:" + requestCode);
+//        switch (requestCode) {
+//            case REQUEST_CALL_PERMISSION: {
+//                Log.d("test9", "grantResults[0]:" + grantResults[0] + "grantResult[1]:" + grantResults[1]);
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+//                        grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+//                    Log.d("test9", "성공2");
+//                    if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE)
+//                            != PackageManager.PERMISSION_GRANTED) {
+//                        Log.d("test9", "성공3");
+//                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
+//                                != PackageManager.PERMISSION_GRANTED) {
+//                            Log.d("test9", "성공4");
+//                            callPhone();
+//                        }
+//                    }
+//                } else {
+//                    Toast.makeText(getActivity(), "권한 요청을 거부했습니다.", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        }
+//    }
 
-        Cursor c = getActivity().getContentResolver()
-                .query(contentUri, queryField, whereClause, args, null);
-
-        try {
-            if (c.getCount() == 0) {
-                return;
-            }
-            c.moveToFirst();
-            String number = c.getString(0);
-            Log.d("test10", number);
-            Uri phoneNumber = Uri.parse("tel:" + number);
-            Intent intent = new Intent(Intent.ACTION_DIAL, phoneNumber);
-            startActivity(intent);
-        } finally {
-            c.close();
-        }
-    }
+//    private void callPhone() {
+//        Log.d("test9", "callPhone");
+//        Uri contentUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+//        String[] queryField = new String[]{
+//                ContactsContract.CommonDataKinds.Phone.NUMBER
+//        };
+//        String whereClause = ContactsContract.CommonDataKinds.Phone._ID + " = ?";
+//        String args[] = new String[]{mCrime.getContactId()};
+//
+//        Cursor c = getActivity().getContentResolver()
+//                .query(contentUri, queryField, whereClause, args, null);
+//
+//        try {
+//            if (c.getCount() == 0) {
+//                return;
+//            }
+//            c.moveToFirst();
+//            String number = c.getString(0);
+//            Log.d("test10", number);
+//            Uri phoneNumber = Uri.parse("tel:" + number);
+//            Intent intent = new Intent(Intent.ACTION_DIAL, phoneNumber);
+//            startActivity(intent);
+//        } finally {
+//            c.close();
+//        }
+//    }
 
     private void updateDate() {
 

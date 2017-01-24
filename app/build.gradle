@@ -28,5 +28,10 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.karumi:dexter:3.0.0'
+    compile 'com.github.ParkSangGwon:TedPermission:v1.0.11'
+
+
+
 }
 

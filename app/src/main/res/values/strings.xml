@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">Criminallntent</string>
     <string name="crime_title_hint">범죄의 제목을 입력하세요.</string>
+    <string name="crime_detail_hint">범죄의 내용을 입력하세요.</string>
+    <string name="crime_no_content_hint">입력된 범죄 내용이 없습니다.</string>
     <string name="crime_title_label">제목</string>
+    <string name="crime_details_content">내용</string>
     <string name="crime_details_label">상제 내역</string>
     <string name="crime_solved_label">해결됨</string>
     <string name="date_picker_title">범죄 발생일자:</string>

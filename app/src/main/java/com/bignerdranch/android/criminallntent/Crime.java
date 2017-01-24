@@ -7,6 +7,7 @@ import java.util.UUID;
 public class Crime {
     private UUID mId;
     private String mTitle;
+    private String mContent;
     private Date mDate;
     private boolean mSolved;
     private String mSuspect;
@@ -56,4 +57,9 @@ public class Crime {
     public String getPhotoFilename() {
         return "IMG_" + getId().toString() + ".jpg";
     }
+
+    public String getContent() {
+        return mContent;
+    }
+    public void setContent(String content) {mContent = content;}
 }
